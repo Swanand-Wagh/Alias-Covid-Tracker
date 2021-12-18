@@ -8,11 +8,14 @@ import {
 } from "@material-ui/core";
 import "./App.css";
 import InfoBox from "./components/InfoBox";
+import Table from "./components/Table";
 
 const App = () => {
   const [state, setState] = useState("India");
   const [allStates, setAllStates] = useState([]);
   const [mapStates, setMapStates] = useState([]);
+  const [casesType, setCasesType] = useState("cases");
+  const [tableData, setTableData] = useState([]);
 
   useEffect(() => {
     const getStatesData = async () => {
@@ -25,6 +28,7 @@ const App = () => {
           }));
           setAllStates(states);
           setMapStates(data);
+          setTableData(data);
         });
     };
 
@@ -46,7 +50,16 @@ const App = () => {
           </FormControl>
         </div>
 
+        
       </div>
+      <Card className="app__right">
+        <CardContent>
+          <div className="app__information">
+            <h3>Live Cases by Country</h3>
+            <Table states={tableData} />
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 };
