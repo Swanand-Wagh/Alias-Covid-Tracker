@@ -12,7 +12,7 @@ body {
   display: flex;
   justify-content: space-evenly;
   background-color: #f5f6fa;
-  padding: 20px;
+  padding: 30px 20px;
 }
 .app__left {
   flex: 0.9;

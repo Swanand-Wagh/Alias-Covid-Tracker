@@ -24,7 +24,7 @@ const App = () => {
         .then((data) => {
           const states = data.map((st) => ({
             name: st.state_name,
-            value: st.state_name,
+            value: st.state_code,
           }));
           setAllStates(states);
           setMapStates(data);
@@ -50,12 +50,31 @@ const App = () => {
           </FormControl>
         </div>
 
-        
+        <div className="app__stats">
+          <InfoBox
+            onClick={(e) => setCasesType("cases")}
+            title="Coronavirus Cases"
+            isRed
+            active={casesType === "cases"}
+          />
+          <InfoBox
+            onClick={(e) => setCasesType("recovered")}
+            title="Recovered"
+            active={casesType === "recovered"}
+          />
+          <InfoBox
+            onClick={(e) => setCasesType("deaths")}
+            title="Deaths"
+            isRed
+            active={casesType === "deaths"}
+          />
+        </div>
       </div>
+
       <Card className="app__right">
         <CardContent>
           <div className="app__information">
-            <h3>Live Cases by Country</h3>
+            <h3>Live Cases by States</h3>
             <Table states={tableData} />
           </div>
         </CardContent>
