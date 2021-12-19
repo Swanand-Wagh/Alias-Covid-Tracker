@@ -11,11 +11,12 @@ import InfoBox from "./components/InfoBox";
 import Table from "./components/Table";
 
 const App = () => {
-  const [state, setState] = useState("India");
+  const [myState, setMyState] = useState("India");
   const [allStates, setAllStates] = useState([]);
   const [mapStates, setMapStates] = useState([]);
   const [casesType, setCasesType] = useState("cases");
   const [tableData, setTableData] = useState([]);
+  const [infoBox, setInfoBox] = useState({});
 
   useEffect(() => {
     const getStatesData = async () => {
@@ -35,14 +36,23 @@ const App = () => {
     getStatesData();
   }, []);
 
+  const onStateChange = (e) => {
+    setMyState(e.target.value);
+
+    const individualData = tableData.find((element) => {
+      return element.state_code === e.target.value;
+    });
+    setInfoBox(individualData);
+  };
+
   return (
     <div className="app">
       <div className="app__left">
         <div className="app__header">
           <h1>COVID-19 Tracker</h1>
           <FormControl className="app__dropdown">
-            <Select variant="outlined">
-              <MenuItem value="india">India</MenuItem>
+            <Select variant="outlined" value={myState} onChange={onStateChange}>
+              <MenuItem value="India">India</MenuItem>
               {allStates.map((st) => (
                 <MenuItem value={st.value}>{st.name}</MenuItem>
               ))}
@@ -56,17 +66,23 @@ const App = () => {
             title="Coronavirus Cases"
             isRed
             active={casesType === "cases"}
+            cases={infoBox.new_active}
+            total={infoBox.new_positive}
           />
           <InfoBox
             onClick={(e) => setCasesType("recovered")}
             title="Recovered"
             active={casesType === "recovered"}
+            cases={infoBox.cured}
+            total={infoBox.new_cured}
           />
           <InfoBox
             onClick={(e) => setCasesType("deaths")}
             title="Deaths"
             isRed
             active={casesType === "deaths"}
+            cases={infoBox.death}
+            total={infoBox.new_death}
           />
         </div>
       </div>
