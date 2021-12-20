@@ -9,6 +9,8 @@ import {
 import "./App.css";
 import InfoBox from "./components/InfoBox";
 import Table from "./components/Table";
+import Map from "./components/Map";
+import "leaflet/dist/leaflet.css";
 
 const App = () => {
   const [myState, setMyState] = useState("India");
@@ -17,6 +19,8 @@ const App = () => {
   const [casesType, setCasesType] = useState("cases");
   const [tableData, setTableData] = useState([]);
   const [infoBox, setInfoBox] = useState({});
+  const [mapCenter, setMapCenter] = useState({ lat: 23.512, lng: 80.329 });
+  const [mapZoom, setMapZoom] = useState(4.5);
 
   useEffect(() => {
     const getStatesData = async () => {
@@ -38,7 +42,6 @@ const App = () => {
 
   const onStateChange = (e) => {
     setMyState(e.target.value);
-
     const individualData = tableData.find((element) => {
       return element.state_code === e.target.value;
     });
@@ -54,7 +57,9 @@ const App = () => {
             <Select variant="outlined" value={myState} onChange={onStateChange}>
               <MenuItem value="India">India</MenuItem>
               {allStates.map((st) => (
-                <MenuItem value={st.value}>{st.name}</MenuItem>
+                <MenuItem key={st.sno} value={st.value}>
+                  {st.name}
+                </MenuItem>
               ))}
             </Select>
           </FormControl>
@@ -85,6 +90,7 @@ const App = () => {
             total={infoBox.new_death}
           />
         </div>
+        <Map casesType={casesType} center={mapCenter} zoom={mapZoom} />
       </div>
 
       <Card className="app__right">

@@ -5,7 +5,7 @@ function Table({ states }) {
   return (
     <div className="table">
       {states.map((st) => (
-        <tr>
+        <tr key={st.sno}>
           <td>{st.state_name}</td>
           <td>
             <strong>{st.active}</strong>
