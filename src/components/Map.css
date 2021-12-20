@@ -40,3 +40,9 @@
   font-size: 16px;
   margin-top: 5px;
 }
+
+@media (max-width: 990px) {
+  .map {
+    margin-bottom: 30px;
+  }
+}
