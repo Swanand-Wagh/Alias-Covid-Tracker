@@ -11,6 +11,16 @@
   justify-content: space-between;
 }
 
+.flag__container {
+  display: flex;
+  padding: 2.5px 0;
+}
+
+.flag {
+  width: 50px;
+  object-fit: contain;
+}
+
 .table td {
   padding: 0.5rem;
   border: none;

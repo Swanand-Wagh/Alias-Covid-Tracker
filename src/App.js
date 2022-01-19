@@ -13,9 +13,9 @@ import Map from "./components/Map";
 import "leaflet/dist/leaflet.css";
 
 const App = () => {
-  const [myState, setMyState] = useState("India");
-  const [allStates, setAllStates] = useState([]);
-  const [mapStates, setMapStates] = useState([]);
+  const [selectedCountry, setSelectedCountry] = useState("Worldwide");
+  const [allCountries, setAllCountries] = useState([]);
+  const [mapCountries, setMapCountries] = useState([]);
   const [casesType, setCasesType] = useState("cases");
   const [tableData, setTableData] = useState([]);
   const [infoBox, setInfoBox] = useState({});
@@ -24,15 +24,16 @@ const App = () => {
 
   useEffect(() => {
     const getStatesData = async () => {
-      fetch("https://www.mohfw.gov.in/data/datanew.json")
+      fetch("https://disease.sh/v3/covid-19/countries")
         .then((response) => response.json())
         .then((data) => {
-          const states = data.map((st) => ({
-            name: st.state_name,
-            value: st.state_code,
+          const countries = data.map((country) => ({
+            id: country.countryInfo.iso3,
+            name: country.country,
+            value: country.countryInfo.iso2,
           }));
-          setAllStates(states);
-          setMapStates(data);
+          setAllCountries(countries);
+          setMapCountries(data);
           setTableData(data);
         });
     };
@@ -40,12 +41,17 @@ const App = () => {
     getStatesData();
   }, []);
 
-  const onStateChange = (e) => {
-    setMyState(e.target.value);
+  const onCountryChange = (e) => {
+    setSelectedCountry(e.target.value);
     const individualData = tableData.find((element) => {
-      return element.state_code === e.target.value;
+      return element.country === e.target.value;
     });
     setInfoBox(individualData);
+    setMapCenter({
+      lat: individualData.countryInfo.lat,
+      lng: individualData.countryInfo.long,
+    });
+    setMapZoom(4);
   };
 
   return (
@@ -54,11 +60,15 @@ const App = () => {
         <div className="app__header">
           <h1>COVID-19 Tracker</h1>
           <FormControl className="app__dropdown">
-            <Select variant="outlined" value={myState} onChange={onStateChange}>
-              <MenuItem value="India">India</MenuItem>
-              {allStates.map((st) => (
-                <MenuItem key={st.sno} value={st.value}>
-                  {st.name}
+            <Select
+              variant="outlined"
+              value={selectedCountry}
+              onChange={onCountryChange}
+            >
+              <MenuItem value="Worldwide">Worldwide</MenuItem>
+              {allCountries.map((c) => (
+                <MenuItem key={c.id} value={c.name}>
+                  {c.name}
                 </MenuItem>
               ))}
             </Select>
@@ -71,23 +81,23 @@ const App = () => {
             title="Coronavirus Cases"
             isRed
             active={casesType === "cases"}
-            cases={infoBox.new_active}
-            total={infoBox.new_positive}
+            cases={infoBox.todayCases}
+            total={infoBox.cases}
           />
           <InfoBox
             onClick={(e) => setCasesType("recovered")}
             title="Recovered"
             active={casesType === "recovered"}
-            cases={infoBox.cured}
-            total={infoBox.new_cured}
+            cases={infoBox.todayRecovered}
+            total={infoBox.recovered}
           />
           <InfoBox
             onClick={(e) => setCasesType("deaths")}
             title="Deaths"
             isRed
             active={casesType === "deaths"}
-            cases={infoBox.death}
-            total={infoBox.new_death}
+            cases={infoBox.todayDeaths}
+            total={infoBox.deaths}
           />
         </div>
         <Map casesType={casesType} center={mapCenter} zoom={mapZoom} />
@@ -96,8 +106,8 @@ const App = () => {
       <Card className="app__right">
         <CardContent>
           <div className="app__information">
-            <h3>Live Cases by States</h3>
-            <Table states={tableData} />
+            <h3>Live Cases by Countries</h3>
+            <Table countries={tableData} />
           </div>
         </CardContent>
       </Card>
