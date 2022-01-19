@@ -26,7 +26,7 @@ const App = () => {
 
   useEffect(() => {
     const getStatesData = async () => {
-      fetch("https://disease.sh/v3/covid-19/countries")
+      await fetch("https://disease.sh/v3/covid-19/countries")
         .then((response) => response.json())
         .then((data) => {
           const countries = data.map((country) => ({
@@ -45,7 +45,7 @@ const App = () => {
 
   useEffect(() => {
     const fetchGlobalData = async () => {
-      fetch("https://disease.sh/v3/covid-19/all")
+      await fetch("https://disease.sh/v3/covid-19/all")
         .then((response) => response.json())
         .then((data) => {
           setGlobalData(data);
@@ -53,7 +53,6 @@ const App = () => {
     };
 
     fetchGlobalData();
-    console.log(globalData);
   }, []);
 
   const onCountryChange = (e) => {
@@ -123,7 +122,12 @@ const App = () => {
             total={isSelected ? infoBox.deaths : globalData.deaths}
           />
         </div>
-        <Map casesType={casesType} center={mapCenter} zoom={mapZoom} />
+        <Map
+          country={isSelected ? infoBox : globalData}
+          casesType={casesType}
+          center={mapCenter}
+          zoom={mapZoom}
+        />
       </div>
 
       <Card className="app__right">
