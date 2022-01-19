@@ -13,7 +13,9 @@ import Map from "./components/Map";
 import "leaflet/dist/leaflet.css";
 
 const App = () => {
+  const [globalData, setGlobalData] = useState({});
   const [selectedCountry, setSelectedCountry] = useState("Worldwide");
+  const [isSelected, setIsSelected] = useState(false);
   const [allCountries, setAllCountries] = useState([]);
   const [mapCountries, setMapCountries] = useState([]);
   const [casesType, setCasesType] = useState("cases");
@@ -41,17 +43,36 @@ const App = () => {
     getStatesData();
   }, []);
 
+  useEffect(() => {
+    const fetchGlobalData = async () => {
+      fetch("https://disease.sh/v3/covid-19/all")
+        .then((response) => response.json())
+        .then((data) => {
+          setGlobalData(data);
+        });
+    };
+
+    fetchGlobalData();
+    console.log(globalData);
+  }, []);
+
   const onCountryChange = (e) => {
-    setSelectedCountry(e.target.value);
-    const individualData = tableData.find((element) => {
-      return element.country === e.target.value;
-    });
-    setInfoBox(individualData);
-    setMapCenter({
-      lat: individualData.countryInfo.lat,
-      lng: individualData.countryInfo.long,
-    });
-    setMapZoom(4);
+    if (e.target.value === "Worldwide") {
+      setIsSelected(false);
+      setMapCenter({ lat: 23.512, lng: 80.329 });
+    } else {
+      setSelectedCountry(e.target.value);
+      const individualData = tableData.find((element) => {
+        return element.country === e.target.value;
+      });
+      setInfoBox(individualData);
+      setMapCenter({
+        lat: individualData.countryInfo.lat,
+        lng: individualData.countryInfo.long,
+      });
+      setMapZoom(4);
+      setIsSelected(true);
+    }
   };
 
   return (
@@ -81,23 +102,25 @@ const App = () => {
             title="Coronavirus Cases"
             isRed
             active={casesType === "cases"}
-            cases={infoBox.todayCases}
-            total={infoBox.cases}
+            cases={isSelected ? infoBox.todayCases : globalData.todayCases}
+            total={isSelected ? infoBox.cases : globalData.cases}
           />
           <InfoBox
             onClick={(e) => setCasesType("recovered")}
             title="Recovered"
             active={casesType === "recovered"}
-            cases={infoBox.todayRecovered}
-            total={infoBox.recovered}
+            cases={
+              isSelected ? infoBox.todayRecovered : globalData.todayRecovered
+            }
+            total={isSelected ? infoBox.recovered : globalData.recovered}
           />
           <InfoBox
             onClick={(e) => setCasesType("deaths")}
             title="Deaths"
             isRed
             active={casesType === "deaths"}
-            cases={infoBox.todayDeaths}
-            total={infoBox.deaths}
+            cases={isSelected ? infoBox.todayDeaths : globalData.todayDeaths}
+            total={isSelected ? infoBox.deaths : globalData.deaths}
           />
         </div>
         <Map casesType={casesType} center={mapCenter} zoom={mapZoom} />
