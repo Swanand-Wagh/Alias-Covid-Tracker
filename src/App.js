@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useReducer } from "react";
 import {
   MenuItem,
   FormControl,
@@ -7,12 +7,15 @@ import {
   CardContent,
 } from "@material-ui/core";
 import "./App.css";
+import reducer, { defaultState } from "./reducer";
 import InfoBox from "./components/InfoBox";
 import Table from "./components/Table";
 import Map from "./components/Map";
 import "leaflet/dist/leaflet.css";
 
 const App = () => {
+  const [state, dispatch] = useReducer(reducer, defaultState);
+
   const [globalData, setGlobalData] = useState({});
   const [selectedCountry, setSelectedCountry] = useState("Worldwide");
   const [isSelected, setIsSelected] = useState(false);
@@ -25,7 +28,7 @@ const App = () => {
   const [mapZoom, setMapZoom] = useState(4.5);
 
   useEffect(() => {
-    const getStatesData = async () => {
+    const getCountriesData = async () => {
       await fetch("https://disease.sh/v3/covid-19/countries")
         .then((response) => response.json())
         .then((data) => {
@@ -40,7 +43,7 @@ const App = () => {
         });
     };
 
-    getStatesData();
+    getCountriesData();
   }, []);
 
   useEffect(() => {
