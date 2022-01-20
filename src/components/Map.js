@@ -4,8 +4,6 @@ import { showDataOnMap } from "./DrawCircles";
 import "./Map.css";
 
 function Map({ country, casesType, center, zoom }) {
-  console.log(country.cases);
-
   return (
     <div className="map">
       <LeafletMap center={center} zoom={zoom}>

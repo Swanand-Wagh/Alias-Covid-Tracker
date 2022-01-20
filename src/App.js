@@ -16,17 +16,6 @@ import "leaflet/dist/leaflet.css";
 const App = () => {
   const [state, dispatch] = useReducer(reducer, defaultState);
 
-  const [globalData, setGlobalData] = useState({});
-  const [selectedCountry, setSelectedCountry] = useState("Worldwide");
-  const [isSelected, setIsSelected] = useState(false);
-  const [allCountries, setAllCountries] = useState([]);
-  const [mapCountries, setMapCountries] = useState([]);
-  const [casesType, setCasesType] = useState("cases");
-  const [tableData, setTableData] = useState([]);
-  const [infoBox, setInfoBox] = useState({});
-  const [mapCenter, setMapCenter] = useState({ lat: 23.512, lng: 80.329 });
-  const [mapZoom, setMapZoom] = useState(4.5);
-
   useEffect(() => {
     const getCountriesData = async () => {
       await fetch("https://disease.sh/v3/covid-19/countries")
@@ -37,9 +26,7 @@ const App = () => {
             name: country.country,
             value: country.countryInfo.iso2,
           }));
-          setAllCountries(countries);
-          setMapCountries(data);
-          setTableData(data);
+          dispatch({ type: "FETCH_COUNTRIES", payload: { countries, data } });
         });
     };
 
@@ -51,7 +38,7 @@ const App = () => {
       await fetch("https://disease.sh/v3/covid-19/all")
         .then((response) => response.json())
         .then((data) => {
-          setGlobalData(data);
+          dispatch({ type: "FETCH_GLOBAL", payload: data });
         });
     };
 
@@ -60,20 +47,32 @@ const App = () => {
 
   const onCountryChange = (e) => {
     if (e.target.value === "Worldwide") {
-      setIsSelected(false);
-      setMapCenter({ lat: 23.512, lng: 80.329 });
+      dispatch({
+        type: "COUNTRY_CHANGE",
+        payload: {
+          name: "Worldwide",
+          bool: false,
+          center: { lat: 23.512, lng: 80.329 },
+        },
+      });
     } else {
-      setSelectedCountry(e.target.value);
-      const individualData = tableData.find((element) => {
+      const individualData = state.tableData.find((element) => {
         return element.country === e.target.value;
       });
-      setInfoBox(individualData);
-      setMapCenter({
-        lat: individualData.countryInfo.lat,
-        lng: individualData.countryInfo.long,
+
+      dispatch({
+        type: "COUNTRY_CHANGE",
+        payload: {
+          bool: true,
+          center: {
+            lat: individualData.countryInfo.lat,
+            lng: individualData.countryInfo.long,
+          },
+          zoom: 4,
+          box: individualData,
+          country: e.target.value,
+        },
       });
-      setMapZoom(4);
-      setIsSelected(true);
     }
   };
 
@@ -85,11 +84,11 @@ const App = () => {
           <FormControl className="app__dropdown">
             <Select
               variant="outlined"
-              value={selectedCountry}
+              value={state.selectedCountry}
               onChange={onCountryChange}
             >
               <MenuItem value="Worldwide">Worldwide</MenuItem>
-              {allCountries.map((c) => (
+              {state.allCountries.map((c) => (
                 <MenuItem key={c.id} value={c.name}>
                   {c.name}
                 </MenuItem>
@@ -100,36 +99,60 @@ const App = () => {
 
         <div className="app__stats">
           <InfoBox
-            onClick={(e) => setCasesType("cases")}
+            onClick={() =>
+              dispatch({ type: "SET_CASE_TYPES", payload: "cases" })
+            }
             title="Coronavirus Cases"
             isRed
-            active={casesType === "cases"}
-            cases={isSelected ? infoBox.todayCases : globalData.todayCases}
-            total={isSelected ? infoBox.cases : globalData.cases}
-          />
-          <InfoBox
-            onClick={(e) => setCasesType("recovered")}
-            title="Recovered"
-            active={casesType === "recovered"}
+            active={state.casesType === "cases"}
             cases={
-              isSelected ? infoBox.todayRecovered : globalData.todayRecovered
+              state.isSelected
+                ? state.infoBox.todayCases
+                : state.globalData.todayCases
             }
-            total={isSelected ? infoBox.recovered : globalData.recovered}
+            total={
+              state.isSelected ? state.infoBox.cases : state.globalData.cases
+            }
           />
           <InfoBox
-            onClick={(e) => setCasesType("deaths")}
+            onClick={() =>
+              dispatch({ type: "SET_CASE_TYPES", payload: "recovered" })
+            }
+            title="Recovered"
+            active={state.casesType === "recovered"}
+            cases={
+              state.isSelected
+                ? state.infoBox.todayRecovered
+                : state.globalData.todayRecovered
+            }
+            total={
+              state.isSelected
+                ? state.infoBox.recovered
+                : state.globalData.recovered
+            }
+          />
+          <InfoBox
+            onClick={() =>
+              dispatch({ type: "SET_CASE_TYPES", payload: "deaths" })
+            }
             title="Deaths"
             isRed
-            active={casesType === "deaths"}
-            cases={isSelected ? infoBox.todayDeaths : globalData.todayDeaths}
-            total={isSelected ? infoBox.deaths : globalData.deaths}
+            active={state.casesType === "deaths"}
+            cases={
+              state.isSelected
+                ? state.infoBox.todayDeaths
+                : state.globalData.todayDeaths
+            }
+            total={
+              state.isSelected ? state.infoBox.deaths : state.globalData.deaths
+            }
           />
         </div>
         <Map
-          country={isSelected ? infoBox : globalData}
-          casesType={casesType}
-          center={mapCenter}
-          zoom={mapZoom}
+          country={state.isSelected ? state.infoBox : state.globalData}
+          casesType={state.casesType}
+          center={state.mapCenter}
+          zoom={state.mapZoom}
         />
       </div>
 
@@ -137,7 +160,7 @@ const App = () => {
         <CardContent>
           <div className="app__information">
             <h3>Live Cases by Countries</h3>
-            <Table countries={tableData} />
+            <Table countries={state.tableData} />
           </div>
         </CardContent>
       </Card>
